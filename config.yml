@@ -1,0 +1,106 @@
+secrets: secret.yml
+templates:
+  tv:
+    exists_series:
+      - '/home/maxime/media/Tv Shows/English/{{ tvdb_series_name }}'
+      - '/home/maxime/media/Downloads/'
+    content_size:
+      max: 3000
+      min: 150
+    thetvdb_lookup: yes
+    inputs: 
+      - rss: http://showrss.info/user/32768.rss?magnets=false&namespaces=false&name=clean&quality=hd&re=yes
+    set:
+      propers: yes
+      skip_files:
+        - '*.nfo'
+        - '*[sS]ample*'
+        - '*.txt'
+      movedone: '/home/maxime/media/Tv Shows/English/{{ tvdb_Series_name }}/Season {{tvdb_season}}/'
+      content_filename: '/{{ tvdb_series_name }} - {{ series_id }}'
+    all_series: yes
+  movie:
+    regexp:
+      reject:
+        - (s|d)ub(s|bed)?\b: {from: title}                    # Block any subbed/dubbed/etc videos
+        - \bspanish\b: {from: title}                          # Spanish releases kept cropping up
+        - \b(duo|tri|quadri|tetra|penta)logy\b: {from: title} # Block series, only accept one at a time
+        - \b3-?D\b: {from: title}                             # I don't have any 3D displays
+        - \btrailer\b: {from: title}                          # I've gotten a few trailers that matched as movies. VERY annoying
+        - \bR5\b: {from: title}                               # The following are poor quality types that somehow got through the quality
+        - \bWEBSCR\b: {from: title}                           # features usually due to the title including a keyword like "720p" as well
+        - \bscreener\b: {from: title}
+        - \bTS\b: {from: title}
+        - \bCam\b: {from: title}
+        - '{C_P}': {from: title}                              # The following are groups with poor quality releases
+        - TrTd TeaM: {from: title}
+        - \[TNTVillage\]: {from: title}
+        - \[facepalm\]: {from: title}
+        - \bASAP\b: {from: title}   
+    content_size:
+      min: 1500
+      max: 6000
+    seen_movies: strict
+    imdb_required: yes
+    imdb:
+      reject_genres:
+        - musical
+    inputs:
+      - rss: https://kat.cr/usearch/user%3Acondors/?rss=1
+    set:
+      movedone: '/home/maxime/media/Movies/English/{{imdb_genres[0]}}/'
+      content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality[0]}}]'
+  global:
+      # Require at least 10 seeds of any torrent
+    free_space:
+      path: /home/maxime/media
+      space: 50000
+    pathscrub: windows
+    deluge:
+      main_file_only: yes
+      username: '{{secrets.deluge.username}}'
+      password: '{{secrets.deluge.password}}'
+      host: 'localhost'
+      port: 58846
+      path: '/home/maxime/media/Downloads/'
+      keep_subs: yes
+    regexp:
+      reject:
+        - \btrailer\b: {from: title}
+    content_filter:
+      require:
+        - '*.avi'
+        - '*.mkv'
+        - '*.mp4'
+      reject:
+        - '*.wmv'
+        - '*CD1*'
+        - '*.rar'
+        - '*.r0*'
+     
+tasks:
+  tv-show:
+    verify_ssl_certificates: no
+    template:
+      - global
+      - tv  
+    pushbullet:
+      apikey: '{{secrets.pushbullet.apikey}}'
+      title: >
+        {% if series_name is defined %}{{tvdb_series_name|d(series_name)}} - {{series_id}}
+        {% elif imdb_name is defined %}{{imdb_name}} ({{imdb_year}})
+        {% else %}{{title}}
+        {% endif %}
+      body: >
+        {% if series_name is defined %}{{tvdb_series_name|d(series_name)}} - {{series_id}} - {{tvdb_ep_name|d('')}}{% if quality is defined %} ({{quality}}){% endif %}
+        {% elif imdb_name is defined %}{{imdb_name}} ({{imdb_year}}){% if quality is defined %} ({{quality}}){% endif %}
+        {% else %}{{title}}{% if quality is defined %} ({{quality}}){% endif %}
+        {% endif %}
+  movie-dl:
+   verify_ssl_certificates: no
+   template:
+    - global
+    - movie
+   pushbullet:
+     apikey: '{{secrets.pushbullet.apikey}}'
+     title: '{{imdb_name}}'
