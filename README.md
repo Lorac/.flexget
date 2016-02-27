@@ -1,0 +1,2 @@
+# .flexget
+My FlexGet configuration
