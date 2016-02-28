@@ -16,7 +16,7 @@ templates:
         - '*.nfo'
         - '*[sS]ample*'
         - '*.txt'
-      movedone: '/home/maxime/media/Tv Shows/English/{{ tvdb_Series_name }}/Season {{tvdb_season}}/'
+      movedone: '/home/maxime/media/Tv Shows/English/{{ tvdb_series_name }}/Season {{tvdb_season}}/'
       content_filename: '/{{ tvdb_series_name }} - {{ series_id }}'
     all_series: yes
   movie:
