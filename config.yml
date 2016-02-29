@@ -77,7 +77,8 @@ templates:
         - '*CD1*'
         - '*.rar'
         - '*.r0*'
-     
+    torrent_alive:
+      min_seeds: 10 
 tasks:
   tv-show:
     verify_ssl_certificates: no
