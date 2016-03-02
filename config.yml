@@ -50,7 +50,7 @@ templates:
       - rss: https://kat.cr/usearch/user%3ABADASSM3D1A/?rss=1
     set:
       movedone: '/home/maxime/media/Movies/English/{{imdb_genres[0]}}/'
-      content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality}}]'
+      content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
   global:
       # Require at least 10 seeds of any torrent
     free_space:
