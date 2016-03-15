@@ -46,7 +46,7 @@ templates:
       reject_genres:
         - musical
       min_score: 6.0
-      min_vote: 2500
+      min_votes: 2500
     inputs:
       - rss: https://kat.cr/usearch/user%3Acondors/?rss=1
       - rss: https://kat.cr/usearch/user%3ABADASSM3D1A/?rss=1
