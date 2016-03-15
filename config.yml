@@ -45,6 +45,8 @@ templates:
     imdb:
       reject_genres:
         - musical
+      min_score: 6.0
+      min_vote: 2500
     inputs:
       - rss: https://kat.cr/usearch/user%3Acondors/?rss=1
       - rss: https://kat.cr/usearch/user%3ABADASSM3D1A/?rss=1
@@ -80,6 +82,8 @@ templates:
         - '*.r0*'
     torrent_alive:
       min_seeds: 10 
+    retry_failed:
+      max_retries: 10
 tasks:
   tv-show:
     verify_ssl_certificates: no
