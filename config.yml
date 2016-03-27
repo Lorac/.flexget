@@ -72,8 +72,13 @@ templates:
       min_votes: 2500
     reject_genres:
       - musical
+  push-bullet-movie:
+    pushbullet:
+      apikey : '{{secrets.pushbullet.apikey}}'
+      title: '{{imdb_name}}'
   global:
       # Require at least 10 seeds of any torrent
+    verify_ssl_certificates: no
     free_space:
       path: /home/maxime/media
       space: 50000
@@ -122,20 +127,15 @@ tasks:
         {% else %}{{title}}{% if quality is defined %} ({{quality}}){% endif %}
         {% endif %}
   movie-dl:
-   verify_ssl_certificates: no
    template:
     - global
     - imdb-movie
     - movie
-   pushbullet:
-     apikey: '{{secrets.pushbullet.apikey}}'
-     title: '{{imdb_name}}'
+    - push-bullet-movie
   french-movie-dl:
-    verify_ssl_certificates: no
     template:
      - global
      - imdb-movie
      - french-movie
-    pushbullet:
-      apikey : '{{secrets.pushbullet.apikey}}'
-      title: '{{imdb_name}}'
+     - push-bullet-movie
+
