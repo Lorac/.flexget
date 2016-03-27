@@ -40,19 +40,38 @@ templates:
     content_size:
       min: 1500
       max: 6000
-    seen_movies: strict
-    imdb_required: yes
-    imdb:
-      reject_genres:
-        - musical
-      min_score: 6.0
-      min_votes: 2500
+    seen_movies: 
+      scope: local
     inputs:
       - rss: https://kat.cr/usearch/user%3Acondors/?rss=1
       - rss: https://kat.cr/usearch/user%3ABADASSM3D1A/?rss=1
     set:
       movedone: '/home/maxime/media/Movies/English/{{imdb_genres[0]}}/'
       content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
+  french-movie:
+    seen_movies:
+      scope: local
+    content_size:
+      min: 1500
+      max: 6000
+    t411:
+      category: Film
+      terms:
+        - Québécois
+        - HDrip 720
+        - 2D
+    set:
+      movedone: '/home/maxime/media/Movies/Francais/{{imdb_genres[0]}}/'
+      content_filename: '{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
+      ratio: 2
+      removeatratio: 2
+  imdb-movie:
+    imdb_required: yes
+    imdb:
+      min_score: 6.0
+      min_votes: 2500
+    reject_genres:
+      - musical
   global:
       # Require at least 10 seeds of any torrent
     free_space:
@@ -106,7 +125,17 @@ tasks:
    verify_ssl_certificates: no
    template:
     - global
+    - imdb-movie
     - movie
    pushbullet:
      apikey: '{{secrets.pushbullet.apikey}}'
      title: '{{imdb_name}}'
+  french-movie-dl:
+    verify_ssl_certificates: no
+    template:
+     - global
+     - imdb-movie
+     - french-movie
+    pushbullet:
+      apikey : '{{secrets.pushbullet.apikey}}'
+      title: '{{imdb_name}}'
