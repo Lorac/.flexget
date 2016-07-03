@@ -20,6 +20,7 @@ templates:
       content_filename: '/{{ tvdb_series_name }} - {{ series_id }}'
     all_series: yes
   movie:
+    proper_movies: yes
     regexp:
       reject:
         - (s|d)ub(s|bed)?\b: {from: title}                    # Block any subbed/dubbed/etc videos
@@ -37,28 +38,36 @@ templates:
         - \[TNTVillage\]: {from: title}
         - \[facepalm\]: {from: title}
         - \bASAP\b: {from: title}   
+        - \bHDTC\b: {from: title}
     content_size:
       min: 1500
-      max: 6000
+      max: 7500
     seen_movies: 
       scope: local
     inputs:
       - rss: https://kat.cr/usearch/user%3Acondors/?rss=1
-      - rss: https://kat.cr/usearch/user%3ABADASSM3D1A/?rss=1
+      - rss: https://kat.cr/usearch/user%3Atomcat-12/?rss=1
     set:
       movedone: '/home/maxime/media/Movies/English/{{imdb_genres[0]}}/'
       content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
+    quality:
+      - 720p-1080p
+      - bluray
   french-movie:
+    proper_movies: yes
+    regexp:
+      reject:
+        - \btruefrench\b: {from: title}
     seen_movies:
       scope: local
     content_size:
-      min: 1500
-      max: 6000
+      min: 600
+      max: 3000
     t411:
       category: Film
       terms:
         - Québécois
-        - HDrip 720
+        - BDrip/BRrip
         - 2D
     set:
       movedone: '/home/maxime/media/Movies/Francais/{{imdb_genres[0]}}/'
@@ -68,7 +77,7 @@ templates:
   imdb-movie:
     imdb_required: yes
     imdb:
-      min_score: 6.0
+      min_score: 5.8
       min_votes: 2500
       reject_genres:
         - musical
@@ -107,7 +116,7 @@ templates:
     torrent_alive:
       min_seeds: 10 
     retry_failed:
-      max_retries: 10
+      max_retries: 24
 tasks:
   tv-show:
     verify_ssl_certificates: no
@@ -138,4 +147,7 @@ tasks:
      - imdb-movie
      - french-movie
      - push-bullet-movie
+    pushbullet:
+      apikey: '{{secrets.pushbullet.apikey}}'
+      title: '{{imdb_name}} french'
 
