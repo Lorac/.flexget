@@ -1,24 +1,24 @@
-secrets: secret.yml
+variables: secret.yml
 templates:
   tv:
     exists_series:
       - '/home/maxime/media/Tv Shows/English/{{ tvdb_series_name }}'
       - '/home/maxime/media/Downloads/'
-    content_size:
-      max: 3000
-      min: 150
     thetvdb_lookup: yes
     inputs: 
-      - rss: http://showrss.info/user/32768.rss?magnets=false&namespaces=false&name=clean&quality=hd&re=yes
+      - rss: http://showrss.info/user/32768.rss?magnets=true&namespaces=true&name=clean&quality=hd&re=yes
     set:
       propers: yes
       skip_files:
         - '*.nfo'
         - '*[sS]ample*'
         - '*.txt'
-      movedone: '/home/maxime/media/Tv Shows/English/{{ tvdb_series_name }}/Season {{tvdb_season}}/'
-      content_filename: '/{{ tvdb_series_name }} - {{ series_id }}'
+      movedone: '/home/maxime/media/Tv Shows/English/{{ series_name }}/Season {{series_season}}/'
+      content_filename: '/{{ series_name }} - {{ series_id }}'
     all_series: yes
+    series:
+      - "Marvel's Agents of S.H.I.E.L.D.":
+          name_regexp: ^marvel(')?s.agents.of.(s.h.i.e.l.d.?|shield)
   movie:
     proper_movies: yes
     regexp:
@@ -39,6 +39,8 @@ templates:
         - \[facepalm\]: {from: title}
         - \bASAP\b: {from: title}   
         - \bHDTC\b: {from: title}
+        - \bHC\b: {from: title}
+        - \bCHINESE\b: {from: title}
     content_size:
       min: 1500
       max: 7500
@@ -62,7 +64,7 @@ templates:
       scope: local
     content_size:
       min: 600
-      max: 3000
+      max: 4000
     t411:
       category: Film
       terms:
@@ -75,31 +77,35 @@ templates:
       ratio: 2
       removeatratio: 2
   imdb-movie:
-    imdb_required: yes
+    require_field: imdb_url
     imdb:
       min_score: 5.8
       min_votes: 2500
       reject_genres:
         - musical
-  push-bullet-movie:
-    pushbullet:
-      apikey : '{{secrets.pushbullet.apikey}}'
-      title: '{{imdb_name}}'
+  push-bullet:
+    notify:
+      entries:
+        what: accepted
+        via:
+          - pushbullet:
+              api_key : '{? pushbullet.apikey ?}'
   global:
       # Require at least 10 seeds of any torrent
     verify_ssl_certificates: no
     free_space:
       path: /home/maxime/media
-      space: 50000
+      space: 10000
     pathscrub: windows
     deluge:
       main_file_only: yes
-      username: '{{secrets.deluge.username}}'
-      password: '{{secrets.deluge.password}}'
+      username: '{? deluge.username ?}'
+      password: '{? deluge.password ?}'
       host: 'localhost'
       port: 58846
       path: '/home/maxime/media/Downloads/'
       keep_subs: yes
+      magnetization_timeout: 30
     regexp:
       reject:
         - \btrailer\b: {from: title}
@@ -116,38 +122,25 @@ templates:
     torrent_alive:
       min_seeds: 10 
     retry_failed:
-      max_retries: 24
+      max_retries: 5
+      retry_time: 2 hours
+      retry_time_multiplier: 2
 tasks:
   tv-show:
     verify_ssl_certificates: no
     template:
       - global
-      - tv  
-    pushbullet:
-      apikey: '{{secrets.pushbullet.apikey}}'
-      title: >
-        {% if series_name is defined %}{{tvdb_series_name|d(series_name)}} - {{series_id}}
-        {% elif imdb_name is defined %}{{imdb_name}} ({{imdb_year}})
-        {% else %}{{title}}
-        {% endif %}
-      body: >
-        {% if series_name is defined %}{{tvdb_series_name|d(series_name)}} - {{series_id}} - {{tvdb_ep_name|d('')}}{% if quality is defined %} ({{quality}}){% endif %}
-        {% elif imdb_name is defined %}{{imdb_name}} ({{imdb_year}}){% if quality is defined %} ({{quality}}){% endif %}
-        {% else %}{{title}}{% if quality is defined %} ({{quality}}){% endif %}
-        {% endif %}
+      - tv
+      - push-bullet
   movie-dl:
-   template:
-    - global
-    - imdb-movie
-    - movie
-    - push-bullet-movie
+    template:
+      - global
+      - imdb-movie
+      - movie
+      - push-bullet
   french-movie-dl:
     template:
-     - global
-     - imdb-movie
-     - french-movie
-     - push-bullet-movie
-    pushbullet:
-      apikey: '{{secrets.pushbullet.apikey}}'
-      title: '{{imdb_name}} french'
-
+      - global
+      - imdb-movie
+      - french-movie
+      - push-bullet
