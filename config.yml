@@ -3,7 +3,7 @@ templates:
   tv:
     exists_series:
       - '/home/maxime/media/Tv Shows/English/{{ tvdb_series_name }}'
-      - '/home/maxime/media/Downloads/'
+      - '{? path.download ?}'
     thetvdb_lookup: yes
     inputs: 
       - rss: http://showrss.info/user/32768.rss?magnets=true&namespaces=true&name=clean&quality=hd&re=yes
@@ -13,11 +13,11 @@ templates:
         - '*.nfo'
         - '*[sS]ample*'
         - '*.txt'
-      movedone: '/home/maxime/media/Tv Shows/English/{{ series_name }}/Season {{series_season}}/'
+      movedone: '{? path.tv ?}'
       content_filename: '/{{ series_name }} - {{ series_id }}'
     all_series: yes
     series:
-      - "Marvel's Agents of S.H.I.E.L.D.":
+      - "Marvel's Agents of S.H.I.E.L.D":
           name_regexp: ^marvel(')?s.agents.of.(s.h.i.e.l.d.?|shield)
   movie:
     proper_movies: yes
@@ -41,19 +41,20 @@ templates:
         - \bHDTC\b: {from: title}
         - \bHC\b: {from: title}
         - \bCHINESE\b: {from: title}
+        - \bWEBRip\b: {from: title}
+        - \bWEB-DL\b: {from: title}
     content_size:
-      min: 1500
-      max: 7500
+      min: 2000
+      max: 8000
     seen_movies: 
       scope: local
     inputs:
-      - rss: http://extratorrent.cc/rss.xml?type=user&user=condors
-      - rss: http://extratorrent.cc/rss.xml?type=user&user=tomcat12
+      - rss: https://rarbg.to/rssdd.php?category=44
     set:
-      movedone: '/home/maxime/media/Movies/English/{{imdb_genres[0]}}/'
+      movedone: '{? path.movie ?}'
       content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
     quality:
-      - 720p-1080p
+      - 1080p
       - bluray
   french-movie:
     proper_movies: yes
@@ -72,7 +73,7 @@ templates:
         - BDrip/BRrip
         - 2D
     set:
-      movedone: '/home/maxime/media/Movies/Francais/{{imdb_genres[0]}}/'
+      movedone: '{? path.frmovie ?}'
       content_filename: '{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
       ratio: 2
       removeatratio: 2
