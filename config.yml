@@ -2,23 +2,20 @@ variables: secret.yml
 templates:
   tv:
     exists_series:
-      - '/home/maxime/media/Tv Shows/English/{{ tvdb_series_name }}'
+      - '/plex-media/Tv Shows/English/{{ series_name }}'
       - '{? path.download ?}'
     thetvdb_lookup: yes
     inputs: 
-      - rss: http://showrss.info/user/32768.rss?magnets=true&namespaces=true&name=clean&quality=hd&re=yes
+      - rss: http://showrss.info/user/32768.rss?magnets=true&namespaces=true&name=null&quality=anyhd&re=yes
     set:
       propers: yes
       skip_files:
         - '*.nfo'
         - '*[sS]ample*'
         - '*.txt'
-      movedone: '{? path.tv ?}'
+      move_completed_path: '{? path.tv ?}'
       content_filename: '/{{ series_name }} - {{ series_id }}'
     all_series: yes
-    series:
-      - "Marvel's Agents of S.H.I.E.L.D":
-          name_regexp: ^marvel(')?s.agents.of.(s.h.i.e.l.d.?|shield)
   movie:
     proper_movies: yes
     regexp:
@@ -41,71 +38,45 @@ templates:
         - \bHDTC\b: {from: title}
         - \bHC\b: {from: title}
         - \bCHINESE\b: {from: title}
+        - \bGERMAN\b: {from: title}
+        - \bITALIAN\b: {from: title}
+        - \bJAPANESE\b: {from: title}
+        - \bSWEDISH\b: {from: title}
         - \bWEBRip\b: {from: title}
         - \bWEB-DL\b: {from: title}
-    content_size:
-      min: 2000
-      max: 8000
     seen_movies: 
       scope: local
     inputs:
-      - rss: https://rarbg.to/rssdd.php?category=44
+       - rss: https://rarbg.to/rssdd_magnet.php?category=44
     set:
-      movedone: '{? path.movie ?}'
+      move_completed_path: '{? path.movie ?}'
       content_filename: '/{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
     quality:
       - 1080p
-      - bluray
-  french-movie:
-    proper_movies: yes
-    regexp:
-      reject:
-        - \btruefrench\b: {from: title}
-    seen_movies:
-      scope: local
-    content_size:
-      min: 600
-      max: 4000
-    t411:
-      category: Film
-      terms:
-        - Québécois
-        - BDrip/BRrip
-        - 2D
-    set:
-      movedone: '{? path.frmovie ?}'
-      content_filename: '{{movie_name}} ({{movie_year}}) [{{quality.resolution}}]'
-      ratio: 2
-      removeatratio: 2
+      - '!10bit'
   imdb-movie:
     require_field: imdb_url
     imdb:
-      min_score: 5.8
+      min_score: 5.9
       min_votes: 2500
+      min_year: 2016
       reject_genres:
         - musical
-  push-bullet:
-    notify:
-      entries:
-        what: accepted
-        via:
-          - pushbullet:
-              api_key : '{? pushbullet.apikey ?}'
   global:
-      # Require at least 10 seeds of any torrent
+    # Require at least 10 seeds of any torrent
     verify_ssl_certificates: no
     free_space:
-      path: /home/maxime/media
-      space: 10000
+      path: /plex-media
+      space: 50000
     pathscrub: windows
-    deluge:
+    transmission:
       main_file_only: yes
-      username: '{? deluge.username ?}'
+      username: transmission
       password: '{? deluge.password ?}'
-      host: 'localhost'
-      port: 58846
-      path: '/home/maxime/media/Downloads/'
-      keep_subs: yes
+      host: localhost
+      port: 9091
+      path: '/home/maxime/Downloads/'
+      include_subs: yes
       magnetization_timeout: 30
     regexp:
       reject:
@@ -123,8 +94,8 @@ templates:
     torrent_alive:
       min_seeds: 10 
     retry_failed:
-      max_retries: 5
-      retry_time: 2 hours
+      max_retries: 10
+      retry_time: 1 hour
       retry_time_multiplier: 2
 tasks:
   tv-show:
@@ -132,16 +103,9 @@ tasks:
     template:
       - global
       - tv
-      - push-bullet
   movie-dl:
     template:
       - global
       - imdb-movie
       - movie
-      - push-bullet
-  french-movie-dl:
-    template:
-      - global
-      - imdb-movie
-      - french-movie
-      - push-bullet
+web_server: 7575
